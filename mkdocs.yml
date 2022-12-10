@@ -1,0 +1,10 @@
+site_name: pytest-slowest-first
+site_description: Sort tests by their last duration, slowest first
+site_author: Alexey Klimkin
+
+theme: readthedocs
+
+repo_url: https://github.com/klimkin/pytest-slowest-first
+
+pages:
+- Home: index.md
