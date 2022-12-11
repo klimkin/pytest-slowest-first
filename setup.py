@@ -24,7 +24,7 @@ setup(
     long_description=read("README.rst"),
     py_modules=["pytest_slowest_first"],
     python_requires=">=3.8",
-    install_requires=["pytest>=3.5.0", "pytest-xdist>=3.1.0"],
+    install_requires=["pytest>=7.0.0", "pytest-xdist>=3.1.0"],
     classifiers=[
         "Development Status :: 4 - Beta",
         "Framework :: Pytest",
