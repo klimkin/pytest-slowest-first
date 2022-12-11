@@ -49,12 +49,12 @@ Usage
 -----
 
 For best results, use this plugin with `pytest-xdist`_ to run tests in parallel.
-When used together, make sure to pass ``--dist=loadscope`` to `pytest`_ to
+When used together, make sure to pass ``--dist=loadgroup`` to `pytest`_ to
 ensure that tests are distributed evenly across workers.
 
 Example command line::
 
-    $ pytest --sf -n auto --dist=loadscope
+    $ pytest --sf -n auto --dist=loadgroup
 
 
 Contributing

@@ -6,4 +6,4 @@ first can help to reduce the overall execution time.
 
 Example command line usage:
 
-    pytest --sf -n auto --dist=loadscope
+    pytest --sf -n auto --dist=loadgroup

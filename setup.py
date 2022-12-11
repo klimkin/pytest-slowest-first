@@ -13,7 +13,7 @@ def read(fname):
 
 setup(
     name="pytest-slowest-first",
-    version="0.1.1",
+    version="0.1.2",
     author="Alexey Klimkin",
     author_email="klimkin@gmail.com",
     maintainer="Alexey Klimkin",
