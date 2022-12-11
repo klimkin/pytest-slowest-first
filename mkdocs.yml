@@ -6,5 +6,5 @@ theme: readthedocs
 
 repo_url: https://github.com/klimkin/pytest-slowest-first
 
-pages:
+nav:
 - Home: index.md
