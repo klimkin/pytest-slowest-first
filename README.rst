@@ -14,23 +14,27 @@ pytest-slowest-first
     :target: https://ci.appveyor.com/project/klimkin/pytest-slowest-first/branch/master
     :alt: See Build Status on AppVeyor
 
-Sort tests by their last duration, slowest first
+Sort tests by their last duration, slowest first.
 
 ----
 
-This `pytest`_ plugin was generated with `Cookiecutter`_ along with `@hackebrot`_'s `cookiecutter-pytest-plugin`_ template.
+This `pytest`_ plugin was generated with `Cookiecutter`_ along with `@hackebrot`_'s
+`cookiecutter-pytest-plugin`_ template.
 
 
 Features
 --------
 
-* TODO
+* Sort tests on consecutive runs by their last duration, slowest first.
+* Works with `pytest-xdist`_ by pre-assigning tests to workers based on their
+  last duration.
 
 
 Requirements
 ------------
 
-* TODO
+* pytest
+* pytest-xdist (optional)
 
 
 Installation
@@ -44,7 +48,14 @@ You can install "pytest-slowest-first" via `pip`_ from `PyPI`_::
 Usage
 -----
 
-* TODO
+For best results, use this plugin with `pytest-xdist`_ to run tests in parallel.
+When used together, make sure to pass ``--dist=loadscope`` to `pytest`_ to
+ensure that tests are distributed evenly across workers.
+
+Example command line::
+
+    $ pytest --sf -n auto --dist=loadscope
+
 
 Contributing
 ------------
