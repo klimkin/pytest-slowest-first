@@ -1,64 +1,61 @@
 # -*- coding: utf-8 -*-
 
 
-def test_bar_fixture(testdir):
-    """Make sure that pytest accepts our fixture."""
-
-    # create a temporary pytest test module
-    testdir.makepyfile("""
-        def test_sth(bar):
-            assert bar == "europython2015"
-    """)
-
-    # run pytest with the following cmd args
-    result = testdir.runpytest(
-        '--foo=europython2015',
-        '-v'
-    )
-
-    # fnmatch_lines does an assertion internally
-    result.stdout.fnmatch_lines([
-        '*::test_sth PASSED*',
-    ])
-
-    # make sure that that we get a '0' exit code for the testsuite
-    assert result.ret == 0
-
-
 def test_help_message(testdir):
     result = testdir.runpytest(
-        '--help',
+        "--help",
     )
     # fnmatch_lines does an assertion internally
-    result.stdout.fnmatch_lines([
-        'slowest-first:',
-        '*--foo=DEST_FOO*Set the value for the fixture "bar".',
-    ])
+    result.stdout.fnmatch_lines(
+        [
+            "slowest-first:",
+            "*--sf, --slowest-first",
+            "*Run the slowest tests first",
+        ]
+    )
 
 
-def test_hello_ini_setting(testdir):
-    testdir.makeini("""
-        [pytest]
-        HELLO = world
-    """)
+def test_consequent_run_reorders_tests(testdir):
+    testdir.makepyfile(
+        """
+        import time
+        def test_fast():
+            pass
+        def test_slow():
+            time.sleep(0.1)
+        """
+    )
+    testdir.runpytest("--sf")
+    result = testdir.runpytest("--sf", "--collect-only")
+    result.stdout.fnmatch_lines(
+        [
+            "*test_slow*",
+            "*test_fast*",
+        ]
+    )
 
-    testdir.makepyfile("""
+
+def test_running_with_xdist_loadgroup_interleaves_worker_markers(testdir):
+    testdir.makepyfile(
+        """
+        import time
         import pytest
-
-        @pytest.fixture
-        def hello(request):
-            return request.config.getini('HELLO')
-
-        def test_hello_world(hello):
-            assert hello == 'world'
-    """)
-
-    result = testdir.runpytest('-v')
-
-    # fnmatch_lines does an assertion internally
-    result.stdout.fnmatch_lines([
-        '*::test_hello_world PASSED*',
-    ])
-
-    # make sure that that we get a '0' exit code for the testsuite
-    assert result.ret == 0
+        @pytest.mark.parametrize("i", range(4))
+        def test(i):
+            time.sleep(0.1 * i)
+        """
+    )
+    testdir.runpytest("--sf", "-n2", "--dist=loadgroup")
+    result = testdir.runpytest("--sf", "-n2", "--dist=loadgroup", "-v")
+    result.stdout.fnmatch_lines(
+        [
+            "*gw0*::test*3*",
+            "*gw0*::test*1*",
+        ]
+    )
+    result.stdout.fnmatch_lines(
+        [
+            "*gw1*::test*2*",
+            "*gw1*::test*0*",
+        ]
+    )
