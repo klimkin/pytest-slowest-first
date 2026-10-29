@@ -10,9 +10,9 @@ pytest-slowest-first
     :target: https://pypi.org/project/pytest-slowest-first
     :alt: Python versions
 
-.. image:: https://ci.appveyor.com/api/projects/status/github/klimkin/pytest-slowest-first?branch=master
-    :target: https://ci.appveyor.com/project/klimkin/pytest-slowest-first/branch/master
-    :alt: See Build Status on AppVeyor
+.. image:: https://github.com/klimkin/pytest-slowest-first/actions/workflows/ci.yml/badge.svg
+    :target: https://github.com/klimkin/pytest-slowest-first/actions/workflows/ci.yml
+    :alt: CI status
 
 Sort tests by their last duration, slowest first.
 
@@ -79,7 +79,8 @@ Run tests, lint, and build distributions::
 
 Dependencies and package metadata live in ``pyproject.toml``. Commit
 ``uv.lock`` after changing dependencies with ``uv add`` or ``uv lock``.
-AppVeyor uses the same locked environment and commands on Python 3.10 through 3.14.
+GitHub Actions runs on pull requests and pushes to ``main``. Tests and lint
+use the locked environment on Linux and Windows with Python 3.10 through 3.14.
 
 License
 -------
