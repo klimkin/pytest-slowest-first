@@ -3,6 +3,12 @@ name: Release
 on:
   push:
     tags: ["v[0-9]*"]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing version tag to release again
+        required: true
+        type: string
 
 permissions:
   contents: read
@@ -12,6 +18,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ inputs.tag && format('refs/tags/{0}', inputs.tag) || github.ref }}
       - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
         with:
           version: "0.13.5"
@@ -19,7 +27,7 @@ jobs:
       - run: uv sync --locked
       - name: Validate release version
         env:
-          RELEASE_TAG: ${{ github.ref_name }}
+          RELEASE_TAG: ${{ inputs.tag || github.ref_name }}
         run: >-
           uv run --locked python -c
           'import importlib.metadata, os;
@@ -51,7 +59,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
-          RELEASE_TAG: ${{ github.ref_name }}
+          RELEASE_TAG: ${{ inputs.tag || github.ref_name }}
         run: |
           if gh release view "$RELEASE_TAG" >/dev/null 2>&1; then
             gh release upload "$RELEASE_TAG" dist/* --clobber
@@ -73,4 +81,5 @@ jobs:
         with:
           name: release-dist
           path: dist/
-      - run: uv publish --trusted-publishing always
+      - run: uvx --from twine==7.0.0 twine check dist/*
+      - run: uvx --from twine==7.0.0 twine upload --non-interactive --skip-existing dist/*

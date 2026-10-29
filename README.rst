@@ -95,11 +95,14 @@ change to ``main``. Push a matching version tag to release::
 
 The release workflow verifies the tag matches the package version, runs
 checks, and builds the wheel and source archive. It creates a GitHub release
-with both files and publishes them to PyPI through trusted publishing.
+with both files and publishes them to PyPI with Twine and trusted publishing.
 
 Configure the PyPI project's trusted publisher with owner ``klimkin``,
 repository ``pytest-slowest-first``, workflow ``release.yml``, and environment
 ``pypi``.
+To retry an existing tag without moving it::
+
+    $ gh workflow run release.yml -f tag=v0.2.0
 
 License
 -------
