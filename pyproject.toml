@@ -38,7 +38,10 @@ Homepage = "https://github.com/klimkin/pytest-slowest-first"
 slowest-first = "pytest_slowest_first"
 
 [dependency-groups]
-dev = ["flake8>=7"]
+dev = [
+    "flake8>=7",
+    "ruff>=0.17.3",
+]
 
 [tool.setuptools]
 py-modules = ["pytest_slowest_first"]

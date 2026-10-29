@@ -75,6 +75,8 @@ Run tests, lint, and build distributions::
 
     $ uv run --locked pytest tests
     $ uv run --locked flake8 --max-line-length 100 pytest_slowest_first.py tests
+    $ uv run --locked ruff check .
+    $ uv run --locked ruff format --check .
     $ uv build
 
 Dependencies and package metadata live in ``pyproject.toml``. Commit

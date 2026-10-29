@@ -31,6 +31,8 @@ jobs:
       - run: uv sync --locked
       - run: uv run --locked pytest tests
       - run: uv run --locked flake8 --max-line-length=100 pytest_slowest_first.py tests
+      - run: uv run --locked ruff check .
+      - run: uv run --locked ruff format --check .
 
   build:
     runs-on: ubuntu-latest
