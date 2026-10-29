@@ -33,7 +33,7 @@ Features
 Requirements
 ------------
 
-* pytest
+* pytest >= 7.0, < 9.2
 * pytest-xdist (optional)
 
 
@@ -51,6 +51,13 @@ Usage
 For best results, use this plugin with `pytest-xdist`_ to run tests in parallel.
 When used together, make sure to pass ``--dist=loadgroup`` to `pytest`_ to
 ensure that tests are distributed evenly across workers.
+
+Other xdist schedulers keep their own distribution policy. Existing
+``xdist_group`` markers keep their worker affinity with ``loadgroup``.
+Durations recorded in parallel also apply to later serial runs.
+
+pytest 9.2 changed test node IDs in a way that breaks grouping in
+pytest-xdist 3.8. Use pytest below 9.2 until pytest-xdist supports that change.
 
 Example command line::
 

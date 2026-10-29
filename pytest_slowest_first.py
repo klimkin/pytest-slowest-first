@@ -6,6 +6,7 @@ import os
 import pytest
 
 _CACHE_KEY = "execution_times"
+_NODEID_PROPERTY = "slowest_first_nodeid"
 
 
 def pytest_addoption(parser: pytest.Parser) -> None:
@@ -32,7 +33,11 @@ class DurationRecorder:
         self.durations: dict[str, float] = {}
 
     def pytest_runtest_logreport(self, report: pytest.TestReport) -> None:
-        self.durations[report.nodeid] = self.durations.get(report.nodeid, 0.0) + report.duration
+        nodeid = next(
+            (value for name, value in report.user_properties if name == _NODEID_PROPERTY),
+            report.nodeid,
+        )
+        self.durations[nodeid] = self.durations.get(nodeid, 0.0) + report.duration
 
     def pytest_sessionfinish(self) -> None:
         if self.durations:
@@ -46,14 +51,17 @@ def pytest_configure(config: pytest.Config) -> None:
         config.pluginmanager.register(DurationRecorder(cache), "slowest-first-recorder")
 
 
+@pytest.hookimpl(tryfirst=True)
 def pytest_collection_modifyitems(config: pytest.Config, items: list[pytest.Item]) -> None:
+    for item in items:
+        item.user_properties.append((_NODEID_PROPERTY, item.nodeid))
     cache = getattr(config, "cache", None)
     if not config.option.slowest_first or cache is None:
         return
     execution_times = cache.get(_CACHE_KEY, {})
     items.sort(key=lambda item: execution_times.get(item.nodeid, 0), reverse=True)
     xdist_workers = int(os.environ.get("PYTEST_XDIST_WORKER_COUNT", 0))
-    if xdist_workers > 1:
+    if xdist_workers > 1 and config.getoption("loadgroup", False):
         _assign_xdist_workers(items, xdist_workers)
 
 
@@ -68,4 +76,5 @@ def _assign_xdist_workers(items: list[pytest.Item], xdist_workers: int) -> None:
     """
     for w in range(xdist_workers):
         for i in items[w::xdist_workers]:
-            i.add_marker(pytest.mark.xdist_group(name=f"w{w}"))
+            if i.get_closest_marker("xdist_group") is None:
+                i.add_marker(pytest.mark.xdist_group(name=f"slowest-first-w{w}"))
