@@ -1,31 +1,27 @@
-# What Python version is installed where:
-# https://www.appveyor.com/docs/build-environment/#python
+image: Visual Studio 2022
 
 environment:
+  UV_VERSION: "0.13.5"
+  UV_INSTALL_DIR: C:\uv
   matrix:
-    - PYTHON: "C:\\Python38"
-      TOX_ENV: "py38"
-
-    - PYTHON: "C:\\Python39"
-      TOX_ENV: "py39"
-
-init:
-  - "%PYTHON%/python -V"
-  - "%PYTHON%/python -c \"import struct;print( 8 * struct.calcsize(\'P\'))\""
+    - UV_PYTHON: "3.10"
+    - UV_PYTHON: "3.11"
+    - UV_PYTHON: "3.12"
+    - UV_PYTHON: "3.13"
+    - UV_PYTHON: "3.14"
 
 install:
-  - "%PYTHON%/python -m pip install --upgrade pip"
-  - "%PYTHON%/Scripts/pip install tox"
-  - "%PYTHON%/Scripts/pip install wheel"
+  - ps: irm "https://astral.sh/uv/$env:UV_VERSION/install.ps1" | iex
+  - C:\uv\uv.exe sync --locked
 
-build: false  # Not a C# project, build stuff at the test step instead.
+build: false
 
 test_script:
-  - "%PYTHON%/Scripts/tox -e %TOX_ENV%"
+  - C:\uv\uv.exe run --locked pytest tests
+  - C:\uv\uv.exe run --locked flake8 --max-line-length 100 pytest_slowest_first.py tests
 
 after_test:
-  - "%PYTHON%/python setup.py bdist_wheel"
-  - ps: "ls dist"
+  - C:\uv\uv.exe build
 
 artifacts:
   - path: dist\*
