@@ -59,3 +59,22 @@ def test_running_with_xdist_loadgroup_interleaves_worker_markers(testdir):
             "*gw1*::test*0*",
         ]
     )
+
+
+def test_xdist_run_records_every_test_duration(pytester):
+    pytester.makepyfile(
+        """
+        import pytest
+        @pytest.mark.parametrize("i", range(200))
+        def test(i):
+            pass
+        """
+    )
+    pytester.runpytest("-n4").assert_outcomes(passed=200)
+    result = pytester.runpytest("--cache-show", "execution_times")
+    assert sum("::test[" in line for line in result.outlines) == 200
+
+
+def test_slowest_first_without_cacheprovider(pytester):
+    pytester.makepyfile("def test(): pass")
+    pytester.runpytest("--sf", "-p", "no:cacheprovider").assert_outcomes(passed=1)
