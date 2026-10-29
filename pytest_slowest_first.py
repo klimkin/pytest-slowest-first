@@ -5,7 +5,7 @@ import os
 
 import pytest
 
-_execution_time_key = pytest.StashKey[float]()
+_CACHE_KEY = "execution_times"
 
 
 def pytest_addoption(parser: pytest.Parser) -> None:
@@ -20,29 +20,41 @@ def pytest_addoption(parser: pytest.Parser) -> None:
     )
 
 
+class DurationRecorder:
+    """Sum setup, call and teardown durations, then merge them into the cache once.
+
+    Under pytest-xdist only the controller records: it receives every worker
+    report, so workers never race on the shared cache file.
+    """
+
+    def __init__(self, cache: pytest.Cache) -> None:
+        self.cache = cache
+        self.durations: dict[str, float] = {}
+
+    def pytest_runtest_logreport(self, report: pytest.TestReport) -> None:
+        self.durations[report.nodeid] = self.durations.get(report.nodeid, 0.0) + report.duration
+
+    def pytest_sessionfinish(self) -> None:
+        if self.durations:
+            self.cache.set(_CACHE_KEY, {**self.cache.get(_CACHE_KEY, {}), **self.durations})
+
+
+def pytest_configure(config: pytest.Config) -> None:
+    # `config.cache` is absent under `-p no:cacheprovider`.
+    cache = getattr(config, "cache", None)
+    if cache is not None and not hasattr(config, "workerinput"):
+        config.pluginmanager.register(DurationRecorder(cache), "slowest-first-recorder")
+
+
 def pytest_collection_modifyitems(config: pytest.Config, items: list[pytest.Item]) -> None:
-    # Load the saved execution times from the cache
-    execution_times = config.cache.get("execution_times", {})
-
-    if config.option.slowest_first:
-        items.sort(key=lambda item: execution_times.get(item.nodeid, 0), reverse=True)
-        xdist_workers = int(os.environ.get("PYTEST_XDIST_WORKER_COUNT", 0))
-        if xdist_workers > 1:
-            _assign_xdist_workers(items, xdist_workers)
-
-    # Reset execution time
-    for item in items:
-        item.stash[_execution_time_key] = 0
-
-
-def pytest_runtest_makereport(item: pytest.Item, call: pytest.CallInfo) -> None:
-    """Save aggregated duration of the item calls to the cache."""
-    # Aggregate setup and call phases
-    item.stash[_execution_time_key] += call.duration
-    # Save execution time to the cache
-    execution_times = item.config.cache.get("execution_times", {})
-    execution_times[item.nodeid] = item.stash[_execution_time_key]
-    item.config.cache.set("execution_times", execution_times)
+    cache = getattr(config, "cache", None)
+    if not config.option.slowest_first or cache is None:
+        return
+    execution_times = cache.get(_CACHE_KEY, {})
+    items.sort(key=lambda item: execution_times.get(item.nodeid, 0), reverse=True)
+    xdist_workers = int(os.environ.get("PYTEST_XDIST_WORKER_COUNT", 0))
+    if xdist_workers > 1:
+        _assign_xdist_workers(items, xdist_workers)
 
 
 def _assign_xdist_workers(items: list[pytest.Item], xdist_workers: int) -> None:
