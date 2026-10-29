@@ -84,6 +84,23 @@ Dependencies and package metadata live in ``pyproject.toml``. Commit
 GitHub Actions runs on pull requests and pushes to ``main``. Tests and lint
 use the locked environment on Linux and Windows with Python 3.10 through 3.14.
 
+Releasing
+---------
+
+Update the version in ``pyproject.toml``, run ``uv lock``, and merge the
+change to ``main``. Push a matching version tag to release::
+
+    $ git tag -a v0.2.0 -m "Release 0.2.0"
+    $ git push origin v0.2.0
+
+The release workflow verifies the tag matches the package version, runs
+checks, and builds the wheel and source archive. It creates a GitHub release
+with both files and publishes them to PyPI through trusted publishing.
+
+Configure the PyPI project's trusted publisher with owner ``klimkin``,
+repository ``pytest-slowest-first``, workflow ``release.yml``, and environment
+``pypi``.
+
 License
 -------
 
