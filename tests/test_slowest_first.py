@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 import json
 
 import pytest
@@ -84,7 +82,9 @@ def test_xdist_run_records_every_test_duration(pytester):
 @pytest.mark.parametrize("workers", [0, 2])
 def test_slowest_first_without_cacheprovider(pytester, workers):
     pytester.makepyfile("def test(): pass")
-    pytester.runpytest("--sf", f"-n{workers}", "-p", "no:cacheprovider").assert_outcomes(passed=1)
+    pytester.runpytest(
+        "--sf", f"-n{workers}", "-p", "no:cacheprovider"
+    ).assert_outcomes(passed=1)
 
 
 @pytest.mark.parametrize("workers", [0, 2])
@@ -111,7 +111,9 @@ def test_grouped_durations_reorder_serial_collection(pytester, workers):
         """
     )
     pytester.runpytest(f"-n{workers}", "--dist=loadgroup").assert_outcomes(passed=2)
-    durations = json.loads((pytester.path / ".pytest_cache/v/execution_times").read_text())
+    durations = json.loads(
+        (pytester.path / ".pytest_cache/v/execution_times").read_text()
+    )
     assert durations == {
         "test_grouped_durations_reorder_serial_collection.py::test_duration[fast@host]": 1.0,
         "test_grouped_durations_reorder_serial_collection.py::test_duration[slow@host]": 10.0,
@@ -135,5 +137,5 @@ def test_slowest_first_preserves_user_groups(pytester):
     )
     result = pytester.runpytest("--sf", "-n2", "--dist=loadgroup", "-v")
     result.assert_outcomes(passed=4)
-    assert len({path.read_text() for path in pytester.path.glob('worker-*')}) == 1
+    assert len({path.read_text() for path in pytester.path.glob("worker-*")}) == 1
     assert "@database_slowest-first" not in result.stdout.str()

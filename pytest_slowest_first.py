@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 from __future__ import annotations
 
 import os
@@ -34,14 +33,20 @@ class DurationRecorder:
 
     def pytest_runtest_logreport(self, report: pytest.TestReport) -> None:
         nodeid = next(
-            (value for name, value in report.user_properties if name == _NODEID_PROPERTY),
+            (
+                value
+                for name, value in report.user_properties
+                if name == _NODEID_PROPERTY
+            ),
             report.nodeid,
         )
         self.durations[nodeid] = self.durations.get(nodeid, 0.0) + report.duration
 
     def pytest_sessionfinish(self) -> None:
         if self.durations:
-            self.cache.set(_CACHE_KEY, {**self.cache.get(_CACHE_KEY, {}), **self.durations})
+            self.cache.set(
+                _CACHE_KEY, {**self.cache.get(_CACHE_KEY, {}), **self.durations}
+            )
 
 
 def pytest_configure(config: pytest.Config) -> None:
@@ -52,7 +57,9 @@ def pytest_configure(config: pytest.Config) -> None:
 
 
 @pytest.hookimpl(tryfirst=True)
-def pytest_collection_modifyitems(config: pytest.Config, items: list[pytest.Item]) -> None:
+def pytest_collection_modifyitems(
+    config: pytest.Config, items: list[pytest.Item]
+) -> None:
     for item in items:
         item.user_properties.append((_NODEID_PROPERTY, item.nodeid))
     cache = getattr(config, "cache", None)
@@ -60,7 +67,7 @@ def pytest_collection_modifyitems(config: pytest.Config, items: list[pytest.Item
         return
     execution_times = cache.get(_CACHE_KEY, {})
     items.sort(key=lambda item: execution_times.get(item.nodeid, 0), reverse=True)
-    xdist_workers = int(os.environ.get("PYTEST_XDIST_WORKER_COUNT", 0))
+    xdist_workers = int(os.environ.get("PYTEST_XDIST_WORKER_COUNT", "0"))
     if xdist_workers > 1 and config.getoption("loadgroup", False):
         _assign_xdist_workers(items, xdist_workers)
 

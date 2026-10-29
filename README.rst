@@ -10,9 +10,9 @@ pytest-slowest-first
     :target: https://pypi.org/project/pytest-slowest-first
     :alt: Python versions
 
-.. image:: https://ci.appveyor.com/api/projects/status/github/klimkin/pytest-slowest-first?branch=master
-    :target: https://ci.appveyor.com/project/klimkin/pytest-slowest-first/branch/master
-    :alt: See Build Status on AppVeyor
+.. image:: https://github.com/klimkin/pytest-slowest-first/actions/workflows/ci.yml/badge.svg
+    :target: https://github.com/klimkin/pytest-slowest-first/actions/workflows/ci.yml
+    :alt: CI status
 
 Sort tests by their last duration, slowest first.
 
@@ -33,6 +33,7 @@ Features
 Requirements
 ------------
 
+* Python >= 3.10
 * pytest >= 7.0, < 9.2
 * pytest-xdist (optional)
 
@@ -66,8 +67,22 @@ Example command line::
 
 Contributing
 ------------
-Contributions are very welcome. Tests can be run with `tox`_, please ensure
-the coverage at least stays the same before you submit a pull request.
+Install `uv`_, then sync the development environment from the lockfile::
+
+    $ uv sync --locked
+
+Run tests, lint, and build distributions::
+
+    $ uv run --locked pytest tests
+    $ uv run --locked flake8 --max-line-length 100 pytest_slowest_first.py tests
+    $ uv run --locked ruff check .
+    $ uv run --locked ruff format --check .
+    $ uv build
+
+Dependencies and package metadata live in ``pyproject.toml``. Commit
+``uv.lock`` after changing dependencies with ``uv add`` or ``uv lock``.
+GitHub Actions runs on pull requests and pushes to ``main``. Tests and lint
+use the locked environment on Linux and Windows with Python 3.10 through 3.14.
 
 License
 -------
@@ -89,7 +104,7 @@ If you encounter any problems, please `file an issue`_ along with a detailed des
 .. _`cookiecutter-pytest-plugin`: https://github.com/pytest-dev/cookiecutter-pytest-plugin
 .. _`file an issue`: https://github.com/klimkin/pytest-slowest-first/issues
 .. _`pytest`: https://github.com/pytest-dev/pytest
-.. _`tox`: https://tox.readthedocs.io/en/latest/
+.. _`uv`: https://docs.astral.sh/uv/getting-started/installation/
 .. _`pip`: https://pypi.org/project/pip/
 .. _`PyPI`: https://pypi.org/project
 .. _`pytest-xdist`: https://github.com/pytest-dev/pytest-xdist
